@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart — Kicks Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ===== Kicks Lab Design Tokens (dark, default) ===== */
+    --bg:            #121316;
+    --bg-raised:     #1B1D22;
+    --bg-raised-2:   #24262C;
+    --line:          #2C2F36;
+    --ink:           #F5F3EC;
+    --ink-dim:       #9A9CA5;
+    --ink-faint:     #63656D;
+    --accent:        #DBFF3C;
+    --accent-ink:    #14150F;
+    --danger-quiet:  #FF6B57;
+    --nav-bg:        rgba(18,19,22,0.85);
+    --overlay-bg:    rgba(10,10,11,0.6);
+
+    --font-display:  'Anton', sans-serif;
+    --font-body:     'Space Grotesk', sans-serif;
+
+    --radius-sm:   2px;
+    --radius-md:   4px;
+    --radius-lg:   8px;
+    --radius-full: 999px;
+
+    --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+    --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px; --sp-10: 128px;
+
+    --shadow-card: 0 22px 38px -16px rgba(219,255,60,0.34), 0 8px 18px -10px rgba(0,0,0,0.6);
+    --shadow-glow: 0 10px 28px -6px rgba(219,255,60,0.28);
+
+    --img-filter: grayscale(0.35) brightness(0.85) contrast(1.05);
+    --tile-a:        #EAE7DE;
+    --tile-b:        #D6D3C7;
+
+    --container: 1280px;
+    --nav-h: 76px;
+    --nav-h-scrolled: 60px;
+  }
+
+  :root[data-theme="light"]{
+    --bg:            #F7F6F2;
+    --bg-raised:     #FFFFFF;
+    --bg-raised-2:   #ECEAE2;
+    --line:          #E1DFD6;
+    --ink:           #16170F;
+    --ink-dim:       #55565C;
+    --ink-faint:     #8A8B90;
+    --accent:        #A6C000;
+    --accent-ink:    #14150F;
+    --danger-quiet:  #D1442F;
+    --nav-bg:        rgba(247,246,242,0.88);
+    --overlay-bg:    rgba(20,20,15,0.45);
+
+    --shadow-card: 0 22px 38px -16px rgba(150,178,0,0.38), 0 8px 18px -12px rgba(20,21,15,0.16);
+    --shadow-glow: 0 10px 28px -8px rgba(166,192,0,0.35);
+
+    --img-filter: grayscale(0.15) brightness(1.02) contrast(1.02);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ background:var(--bg); scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    transition:background .25s ease, color .25s ease;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; }
+  ul{ list-style:none; }
+  input,select{ font-family:inherit; }
+
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .wrap{ max-width:var(--container); margin:0 auto; padding:0 var(--sp-6); }
+
+  .skip-link{
+    position:absolute; left:-9999px; top:0;
+    background:var(--accent); color:var(--accent-ink);
+    padding:var(--sp-3) var(--sp-5); z-index:200; border-radius:var(--radius-sm);
+  }
+  .skip-link:focus{ left:var(--sp-4); top:var(--sp-4); }
+
+  /* ===================== ANNOUNCEMENT BAR ===================== */
+  .announce{ background:var(--bg-raised); border-bottom:1px solid var(--line); overflow:hidden; }
+  .announce-track{
+    display:flex; align-items:center; justify-content:center; gap:var(--sp-6);
+    padding:var(--sp-2) 0; font-size:12px; font-weight:600; color:var(--ink-dim); letter-spacing:0.2px;
+  }
+  .announce-track span{ display:flex; align-items:center; gap:var(--sp-2); }
+  .announce-track .sep{ color:var(--ink-faint); }
+
+  /* ===================== NAV ===================== */
+  .nav{
+    border-bottom:1px solid var(--line); position:sticky; top:0;
+    background:var(--nav-bg);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    z-index:100; transition:height .2s ease, background .25s ease;
+  }
+  .nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:var(--nav-h); gap:var(--sp-5); transition:height .2s ease; }
+  .nav.is-scrolled .wrap{ height:var(--nav-h-scrolled); }
+
+  .logo{ font-family:var(--font-display); font-size:20px; letter-spacing:0.5px; white-space:nowrap; display:flex; align-items:center; gap:var(--sp-2); flex-shrink:0; }
+  .logo .dot{ width:8px; height:8px; background:var(--accent); border-radius:var(--radius-full); display:inline-block; }
+
+  .nav-links{ display:flex; align-items:center; gap:var(--sp-6); flex:1; margin-left:var(--sp-6); }
+  .nav-links a{ font-size:15px; font-weight:500; color:var(--ink-dim); padding:var(--sp-2) 0; border-bottom:2px solid transparent; transition:color .15s ease, border-color .15s ease; }
+  .nav-links a:hover{ color:var(--ink); border-bottom-color:var(--accent); }
+  .nav-links a.is-current{ color:var(--ink); border-bottom-color:var(--accent); }
+  .nav-links .sale{ color:var(--accent); }
+
+  .nav-actions{ display:flex; align-items:center; gap:var(--sp-2); }
+  .search-wrap{ display:flex; align-items:center; }
+  .search-field{
+    display:flex; align-items:center; gap:var(--sp-2); width:0; opacity:0; overflow:hidden;
+    background:var(--bg-raised); border:1px solid var(--line); border-radius:var(--radius-sm);
+    transition:width .25s ease, opacity .2s ease, padding .25s ease;
+  }
+  .search-field.is-open{ width:220px; opacity:1; padding:0 var(--sp-3); }
+  .search-field input{ background:none; border:none; color:var(--ink); font-size:14px; padding:9px 0; width:100%; outline:none; }
+  .search-field input::placeholder{ color:var(--ink-faint); }
+
+  .icon-btn{
+    background:none; border:none; color:var(--ink); width:40px; height:40px;
+    display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm);
+    position:relative; transition:background .15s ease, transform .15s ease;
+  }
+  .icon-btn:hover{ background:var(--bg-raised); }
+  .icon-btn svg{ width:20px; height:20px; }
+  .icon-btn.is-active svg{ stroke:var(--accent); }
+
+  #themeToggle .icon-moon{ display:none; }
+  html[data-theme="light"] #themeToggle .icon-sun{ display:none; }
+  html[data-theme="light"] #themeToggle .icon-moon{ display:flex; }
+
+  .cart-badge{
+    position:absolute; top:2px; right:2px; min-width:16px; height:16px; padding:0 3px;
+    border-radius:var(--radius-full); background:var(--accent); color:var(--accent-ink);
+    font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+
+  .nav-toggle{ display:none; background:none; border:none; color:var(--ink); width:40px; height:40px; align-items:center; justify-content:center; }
+
+  .mobile-drawer{ position:fixed; inset:0; background:var(--overlay-bg); z-index:150; opacity:0; pointer-events:none; transition:opacity .2s ease; }
+  .mobile-drawer.is-open{ opacity:1; pointer-events:auto; }
+  .mobile-drawer-panel{
+    position:absolute; top:0; right:0; width:min(320px, 84vw); height:100%;
+    background:var(--bg-raised); border-left:1px solid var(--line); padding:var(--sp-6);
+    transform:translateX(100%); transition:transform .25s ease;
+    display:flex; flex-direction:column; gap:var(--sp-2);
+  }
+  .mobile-drawer.is-open .mobile-drawer-panel{ transform:translateX(0); }
+  .mobile-drawer-panel a{ font-size:20px; font-family:var(--font-display); font-weight:400; padding:var(--sp-4) 0; border-bottom:1px solid var(--line); color:var(--ink); }
+  .mobile-drawer-panel a.sale{ color:var(--accent); }
+  .mobile-drawer-close{ align-self:flex-end; background:none; border:none; color:var(--ink-dim); width:36px; height:36px; }
+
+  @media (max-width:900px){
+    .nav-links{ display:none; }
+    .search-field{ display:none; }
+    .nav-toggle{ display:flex; }
+  }
+
+  /* ===================== PAGE HEADER ===================== */
+  .page-header{ padding:var(--sp-7) 0 var(--sp-6); border-bottom:1px solid var(--line); }
+  .breadcrumb{ font-size:13px; color:var(--ink-faint); margin-bottom:var(--sp-3); }
+  .breadcrumb a{ color:var(--ink-faint); transition:color .15s ease; }
+  .breadcrumb a:hover{ color:var(--ink); }
+  .page-header h1{ font-family:var(--font-display); font-weight:400; font-size:clamp(32px,4vw,48px); letter-spacing:0.3px; }
+  .page-header p{ font-size:14px; color:var(--ink-dim); margin-top:var(--sp-2); }
+
+  .btn-outline{
+    border:1px solid var(--line); background:none; color:var(--ink);
+    font-weight:600; font-size:14px; padding:14px 28px; border-radius:var(--radius-sm);
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .btn-primary{
+    background:var(--accent); color:var(--accent-ink);
+    border:none; font-family:var(--font-body); font-weight:700; font-size:15px;
+    padding:14px 26px; border-radius:var(--radius-sm);
+    transition:transform .15s ease, box-shadow .15s ease;
+    display:flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:var(--shadow-glow); }
+  .btn-primary:disabled{ opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  /* ===================== CART PAGE ===================== */
+  .cart-section{ padding:var(--sp-7) 0 var(--sp-9); }
+  .cart-layout{ display:grid; grid-template-columns:1fr 380px; gap:var(--sp-7); align-items:start; }
+
+  .cart-items{ display:flex; flex-direction:column; gap:var(--sp-4); }
+  .cart-items-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--sp-1); }
+  .cart-items-head h2{ font-family:var(--font-display); font-weight:400; font-size:22px; }
+  .cart-items-head span{ font-size:13px; color:var(--ink-faint); }
+
+  .cart-item{
+    display:flex; gap:var(--sp-4); align-items:center;
+    background:var(--bg-raised); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:var(--sp-4); transition:border-color .2s ease;
+  }
+  .cart-item:hover{ border-color:color-mix(in srgb, var(--accent) 30%, var(--line)); }
+
+  .cart-item-image{
+    position:relative; width:104px; height:104px; flex-shrink:0; border-radius:var(--radius-sm);
+    background:radial-gradient(120% 90% at 30% 20%, var(--tile-a) 0%, var(--tile-b) 100%);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .cart-item-image .shoe{ width:88%; height:auto; filter:var(--img-filter); }
+
+  .cart-item-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .cart-item-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-3); }
+  .cart-item-titles{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .cart-item-brand{ font-size:12px; color:var(--ink-faint); }
+  .cart-item-name{ font-size:16px; font-weight:600; color:var(--ink); }
+  .cart-item-size{ font-size:13px; color:var(--ink-dim); }
+
+  .remove-btn{
+    background:none; border:none; color:var(--ink-faint); width:34px; height:34px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm);
+    transition:color .15s ease, background .15s ease;
+  }
+  .remove-btn svg{ width:18px; height:18px; }
+  .remove-btn:hover{ color:var(--danger-quiet); background:var(--bg-raised-2); }
+
+  .cart-item-bottom{ display:flex; align-items:center; justify-content:space-between; margin-top:var(--sp-1); }
+
+  .qty-stepper{ display:flex; align-items:center; border:1px solid var(--line); border-radius:var(--radius-sm); overflow:hidden; }
+  .qty-stepper button{
+    width:32px; height:32px; background:var(--bg-raised-2); border:none; color:var(--ink);
+    font-size:16px; font-weight:600; display:flex; align-items:center; justify-content:center;
+    transition:color .15s ease, background .15s ease;
+  }
+  .qty-stepper button:hover{ color:var(--accent-ink); background:var(--accent); }
+  .qty-stepper .qty-value{ width:38px; text-align:center; font-size:14px; font-weight:600; }
+
+  .cart-item-price{ font-size:16px; font-weight:700; color:var(--accent); white-space:nowrap; }
+  :root[data-theme="light"] .cart-item-price{ color:var(--ink); }
+
+  @media (max-width:560px){
+    .cart-item{ flex-wrap:wrap; }
+    .cart-item-image{ width:80px; height:80px; }
+    .cart-item-body{ width:100%; }
+  }
+
+  /* ---- order summary ---- */
+  .order-summary{
+    position:sticky; top:calc(var(--nav-h) + var(--sp-5));
+    background:var(--bg-raised); border:1px solid var(--line); border-radius:var(--radius-lg);
+    padding:var(--sp-5); display:flex; flex-direction:column; gap:var(--sp-4);
+  }
+  .order-summary h2{ font-family:var(--font-display); font-weight:400; font-size:20px; letter-spacing:0.3px; }
+
+  .summary-row{ display:flex; align-items:center; justify-content:space-between; font-size:14px; color:var(--ink-dim); }
+  .summary-row strong{ color:var(--ink); font-weight:600; }
+  .summary-row .free{ color:var(--accent); font-weight:700; }
+  :root[data-theme="light"] .summary-row .free{ color:var(--ink); }
+
+  .promo-row{ display:flex; gap:var(--sp-2); }
+  .promo-row input{
+    flex:1; min-width:0; background:var(--bg-raised-2); border:1px solid var(--line); color:var(--ink);
+    font-size:14px; padding:11px 14px; border-radius:var(--radius-sm);
+  }
+  .promo-row input::placeholder{ color:var(--ink-faint); }
+  .promo-row input:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .promo-row button{
+    background:none; border:1px solid var(--line); color:var(--ink); font-weight:600; font-size:13px;
+    padding:0 18px; border-radius:var(--radius-sm); white-space:nowrap; transition:border-color .15s ease, color .15s ease;
+  }
+  .promo-row button:hover{ border-color:var(--accent); color:var(--accent); }
+  .promo-note{ font-size:12px; color:var(--ink-faint); margin-top:-6px; }
+  .promo-note.is-success{ color:var(--accent); }
+  :root[data-theme="light"] .promo-note.is-success{ color:#5C7A00; }
+
+  .summary-divider{ height:1px; background:var(--line); margin:2px 0; }
+
+  .summary-total{ display:flex; align-items:center; justify-content:space-between; font-size:19px; font-weight:700; }
+  .summary-total span:last-child{ color:var(--accent); }
+  :root[data-theme="light"] .summary-total span:last-child{ color:var(--ink); }
+
+  .summary-secure{ display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; color:var(--ink-faint); }
+  .summary-secure svg{ width:13px; height:13px; }
+
+  /* ---- suggested products row ---- */
+  .suggested-section{ margin-top:var(--sp-8); }
+  .suggested-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:var(--sp-5); }
+  .suggested-head h2{ font-family:var(--font-display); font-weight:400; font-size:24px; }
+  .suggested-head p{ font-size:13px; color:var(--ink-faint); }
+  .suggested-grid{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--sp-4); max-width:640px; }
+
+  .product-card{
+    background:var(--bg-raised); border:1px solid var(--line);
+    border-radius:var(--radius-md); overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .product-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow-card); border-color:color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  .product-image{
+    position:relative; aspect-ratio:1/1;
+    background:radial-gradient(120% 90% at 30% 20%, var(--tile-a) 0%, var(--tile-b) 100%);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .product-image .shoe{ width:72%; filter:var(--img-filter); }
+  .product-info{ padding:var(--sp-4); display:flex; flex-direction:column; gap:2px; }
+  .product-brand{ font-size:12px; color:var(--ink-faint); }
+  .product-name{ font-size:15px; font-weight:600; color:var(--ink); }
+  .product-meta-row{ display:flex; align-items:center; justify-content:space-between; margin-top:var(--sp-2); }
+  .product-price{ font-size:14px; font-weight:700; color:var(--accent); }
+  :root[data-theme="light"] .product-price{ color:var(--ink); }
+  .add-to-cart-mini{
+    font-size:13px; font-weight:700; color:var(--ink); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:8px 12px; transition:border-color .15s ease, color .15s ease;
+  }
+  .add-to-cart-mini:hover{ border-color:var(--accent); color:var(--accent); }
+
+  @media (max-width:960px){
+    .cart-layout{ grid-template-columns:1fr; }
+    .order-summary{ position:static; }
+  }
+  @media (max-width:480px){
+    .suggested-grid{ grid-template-columns:1fr; max-width:none; }
+  }
+
+  /* ===================== FOOTER ===================== */
+  footer{ padding:var(--sp-8) 0 calc(var(--sp-6) + 64px); border-top:1px solid var(--line); }
+  .footer-top{ display:grid; grid-template-columns:1.3fr 0.8fr 1fr; gap:var(--sp-8); padding-bottom:var(--sp-7); }
+  .footer-brand{ display:flex; flex-direction:column; gap:var(--sp-5); }
+  .footer-brand p{ font-size:14px; color:var(--ink-dim); max-width:32ch; }
+  .footer-social{ display:flex; gap:var(--sp-3); }
+  .social-btn{
+    width:36px; height:36px; border-radius:var(--radius-full); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--ink-dim);
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .social-btn svg{ width:16px; height:16px; }
+  .social-btn:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .footer-col h4{ font-size:13px; font-weight:600; color:var(--ink-faint); margin-bottom:var(--sp-4); }
+  .footer-col ul{ display:flex; flex-direction:column; gap:var(--sp-3); }
+  .footer-col a{ font-size:14px; color:var(--ink-dim); transition:color .15s ease; }
+  .footer-col a:hover{ color:var(--ink); }
+
+  .footer-newsletter p{ font-size:14px; color:var(--ink-dim); margin-bottom:var(--sp-4); }
+  .newsletter-form{ display:flex; gap:var(--sp-2); }
+  .newsletter-form input{
+    flex:1; min-width:0; background:var(--bg-raised); border:1px solid var(--line);
+    color:var(--ink); font-size:14px; padding:12px 14px; border-radius:var(--radius-sm);
+  }
+  .newsletter-form input::placeholder{ color:var(--ink-faint); }
+  .newsletter-form input:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .newsletter-form button{
+    background:var(--accent); color:var(--accent-ink); border:none; font-weight:700; font-size:14px;
+    padding:12px 18px; border-radius:var(--radius-sm); white-space:nowrap; transition:transform .15s ease;
+  }
+  .newsletter-form button:hover{ transform:translateY(-2px); }
+
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--sp-3);
+    font-size:13px; color:var(--ink-faint);
+    padding-top:var(--sp-5); border-top:1px solid var(--line);
+  }
+  .footer-secure{ display:flex; align-items:center; gap:6px; }
+  .footer-secure svg{ width:14px; height:14px; stroke:var(--ink-faint); }
+
+  @media (max-width:860px){ .footer-top{ grid-template-columns:1fr; gap:var(--sp-6); } }
+
+  /* ===================== MOBILE BOTTOM TAB BAR ===================== */
+  .tab-bar{
+    display:none; position:fixed; left:0; right:0; bottom:0; z-index:90;
+    background:var(--nav-bg); backdrop-filter:blur(10px); border-top:1px solid var(--line);
+    padding:var(--sp-2) var(--sp-5); align-items:center; justify-content:space-between;
+  }
+  .tab-item{ display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--ink-faint); font-size:10px; font-weight:600; position:relative; padding:var(--sp-2); }
+  .tab-item svg{ width:20px; height:20px; }
+  .tab-item.is-active{ color:var(--accent); }
+  .tab-item.is-active svg{ stroke:var(--accent); }
+  .tab-item .cart-badge{ top:-2px; right:-2px; }
+
+  @media (max-width:640px){ .tab-bar{ display:flex; } .cart-section{ padding-bottom:calc(var(--sp-9) + 40px); } }
+
+  /* sneaker illustration fills, shared with shop page */
+  .sh-ground{ fill:rgba(20,21,15,.2); }
+  .sh-sole{ fill:var(--sole,#eee); }
+  .sh-soletop{ fill:var(--sole-top,var(--sole,#eee)); }
+  .sh-outsole{ stroke:var(--outsole,#bbb); stroke-width:7; stroke-linecap:round; fill:none; }
+  .sh-upper{ fill:var(--upper,#ddd); }
+  .sh-heel{ fill:var(--heel,var(--upper,#ddd)); }
+  .sh-toe{ fill:var(--toe,var(--upper,#ddd)); }
+  .sh-panel{ fill:var(--panel,var(--upper,#ddd)); }
+  .sh-stay{ fill:var(--stay,var(--upper,#ddd)); }
+  .sh-tongue{ fill:var(--tongue,var(--upper,#ddd)); stroke:rgba(0,0,0,.14); stroke-width:1.5; }
+  .sh-lace path{ stroke:var(--lace,#fff); stroke-width:5; stroke-linecap:round; fill:none; }
+  .sh-collar{ stroke:var(--collar,#333); stroke-width:6; stroke-linecap:round; fill:none; }
+  .sh-line{ stroke:rgba(0,0,0,.14); stroke-width:2; fill:none; }
+  .sh-shine{ fill:url(#sh-shade); pointer-events:none; }
+  .sh-mesh{ fill:url(#sh-mesh); }
+  .sh-air{ fill:var(--air,rgba(255,255,255,.7)); stroke:var(--air-stroke,rgba(0,0,0,.12)); stroke-width:1.5; }
+
+  /* empty cart state */
+  .cart-empty{ display:none; text-align:center; padding:var(--sp-9) var(--sp-5); }
+  .cart-empty.is-visible{ display:block; }
+  .cart-empty h3{ font-family:var(--font-display); font-weight:400; font-size:24px; margin-bottom:var(--sp-2); }
+  .cart-empty p{ color:var(--ink-dim); font-size:14px; margin-bottom:var(--sp-5); }
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<!-- SNEAKER ILLUSTRATION SYMBOLS -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="sh-shade" gradientUnits="userSpaceOnUse" x1="0" y1="140" x2="0" y2="262">
+      <stop offset="0" stop-color="#fff" stop-opacity=".22"/>
+      <stop offset=".55" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".16"/>
+    </linearGradient>
+    <pattern id="sh-mesh" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <circle cx="3.5" cy="3.5" r="1.3" fill="#000" fill-opacity=".2"/>
+    </pattern>
+
+    <symbol id="shoe-low" viewBox="16 43 384 384">
+      <ellipse cx="206" cy="298" rx="154" ry="9" class="sh-ground"/>
+      <path class="sh-sole" d="M54 258V276C54 282 58 286 64 286H338C350 286 358 278 358 266V258Z"/>
+      <path class="sh-outsole" d="M66 281H336"/>
+      <path class="sh-upper" d="M58 258C52 226 54 188 66 158C78 150 100 150 112 158C118 178 136 190 156 186C160 172 166 152 176 144C182 140 190 142 194 148L296 204C332 212 358 228 358 258Z"/>
+      <path class="sh-heel" d="M58 258C52 226 54 188 66 158C78 150 100 150 112 158C110 190 104 232 100 258Z"/>
+      <path class="sh-toe" d="M296 204C332 212 358 228 358 258H318C318 234 310 214 296 204Z"/>
+      <path class="sh-panel" d="M112 254L144 208C147 203 152 200 158 200H192L154 254Z"/>
+      <path class="sh-stay" d="M196 152L296 204L292 224L190 172Z"/>
+      <path class="sh-tongue" d="M168 154C172 142 190 136 202 150L216 162L178 180Z"/>
+      <g class="sh-lace"><path d="M204 153l-12 21M223 163l-12 21M242 173l-12 21M261 184l-12 21M280 194l-12 21"/></g>
+      <path class="sh-collar" d="M66 158C78 150 100 150 112 158C118 178 136 190 156 186C160 172 164 158 170 150"/>
+      <path class="sh-shine" d="M58 258C52 226 54 188 66 158C78 150 100 150 112 158C118 178 136 190 156 186C160 172 166 152 176 144C182 140 190 142 194 148L296 204C332 212 358 228 358 258Z"/>
+      <path class="sh-line" d="M54 258H358"/>
+    </symbol>
+
+    <symbol id="shoe-run" viewBox="16 43 384 384">
+      <ellipse cx="208" cy="300" rx="158" ry="9" class="sh-ground"/>
+      <path class="sh-upper" d="M56 252C50 214 52 178 64 150C76 142 98 142 110 150C116 172 134 186 156 182C160 168 168 150 178 142C184 138 192 140 196 146L300 200C340 208 366 226 368 258V264H56Z"/>
+      <path class="sh-heel" d="M56 252C50 214 52 178 64 150C76 142 98 142 110 150C114 184 112 222 108 256Z"/>
+      <path class="sh-mesh" d="M140 214L296 214C322 216 336 226 340 248V256H132Z"/>
+      <path class="sh-toe" d="M300 200C340 208 366 226 368 258V264H330C330 236 320 214 300 200Z"/>
+      <path class="sh-panel" d="M118 252C146 246 178 224 200 184L218 194C198 236 164 262 118 262Z"/>
+      <path class="sh-stay" d="M200 150L300 200L296 222L194 172Z"/>
+      <path class="sh-tongue" d="M170 152C174 140 190 134 204 148L218 160L180 178Z"/>
+      <g class="sh-lace"><path d="M208 151l-11 20M227 161l-11 20M246 171l-11 20M265 181l-11 20M284 191l-11 20"/></g>
+      <path class="sh-collar" d="M64 150C76 142 98 142 110 150C116 172 134 186 156 182C160 168 164 156 172 148"/>
+      <path class="sh-shine" d="M56 252C50 214 52 178 64 150C76 142 98 142 110 150C116 172 134 186 156 182C160 168 168 150 178 142C184 138 192 140 196 146L300 200C340 208 366 226 368 258V264H56Z"/>
+      <path class="sh-sole" d="M48 238V274C48 286 56 294 68 294H336C358 294 370 284 370 266V254Z"/>
+      <path class="sh-soletop" d="M48 238L370 254V266L48 250Z"/>
+      <rect class="sh-air" x="62" y="258" width="78" height="26" rx="13"/>
+      <path class="sh-outsole" d="M72 288H336"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announce">
+  <div class="wrap announce-track">
+    <span>Free shipping over $75</span>
+    <span class="sep">·</span>
+    <span>New drop every Friday</span>
+    <span class="sep">·</span>
+    <span>Members get early access</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<header class="nav" id="siteNav">
+  <div class="wrap">
+    <a href="index.html" class="logo"><span class="dot"></span>KICKS LAB</a>
+
+    <ul class="nav-links">
+      <li><a href="shop.html">Men</a></li>
+      <li><a href="shop.html">New Drops</a></li>
+      <li><a href="shop.html" class="sale">Sale</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="search-wrap">
+        <button class="icon-btn" id="searchToggle" aria-label="Search" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div class="search-field" id="searchField">
+          <input type="text" placeholder="Search sneakers..." aria-label="Search">
+        </div>
+      </div>
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle light and dark mode">
+        <span class="icon-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+        <span class="icon-moon" style="display:none; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span>
+      </button>
+      <button class="icon-btn" id="wishlistNavBtn" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+      </button>
+      <button class="icon-btn is-active" aria-label="Cart, 3 items">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-badge" id="cartBadge">3</span>
+      </button>
+      <button class="nav-toggle" id="mobileMenuOpen" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-panel">
+    <button class="mobile-drawer-close" id="mobileMenuClose" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+    </button>
+    <a href="shop.html">Men</a>
+    <a href="shop.html">New Drops</a>
+    <a href="shop.html" class="sale">Sale</a>
+    <a href="shop.html">Contact</a>
+  </div>
+</div>
+
+<main id="main">
+
+  <!-- PAGE HEADER -->
+  <section class="page-header">
+    <div class="wrap">
+      <div class="breadcrumb"><a href="index.html">Home</a> / Cart</div>
+      <h1>Your Cart</h1>
+      <p>3 items ready when you are.</p>
+    </div>
+  </section>
+
+  <!-- CART -->
+  <section class="cart-section">
+    <div class="wrap cart-layout">
+
+      <!-- CART ITEMS -->
+      <div class="cart-col">
+        <div class="cart-items" id="cartItems">
+          <div class="cart-items-head">
+            <h2>Items</h2>
+            <span id="itemCountLabel">3 items</span>
+          </div>
+
+          <!-- ITEM 1 -->
+          <article class="cart-item" data-price="115" data-qty="1">
+            <div class="cart-item-image">
+              <svg class="shoe" role="img" aria-label="Nike Dunk Low Retro in black and white" style="--upper:#F3F1EA;--toe:#1E1F23;--heel:#1E1F23;--panel:#1E1F23;--stay:#1E1F23;--lace:#F3F1EA;--collar:#1E1F23;--sole:#F3F1EA;--outsole:#CFCBBE"><use href="#shoe-low"/></svg>
+            </div>
+            <div class="cart-item-body">
+              <div class="cart-item-top">
+                <div class="cart-item-titles">
+                  <span class="cart-item-brand">Nike</span>
+                  <h3 class="cart-item-name">Dunk Low Retro</h3>
+                  <span class="cart-item-size">Size: US 10</span>
+                </div>
+                <button class="remove-btn" aria-label="Remove Dunk Low Retro from cart">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>
+              </div>
+              <div class="cart-item-bottom">
+                <div class="qty-stepper">
+                  <button type="button" class="qty-minus" aria-label="Decrease quantity">−</button>
+                  <span class="qty-value">1</span>
+                  <button type="button" class="qty-plus" aria-label="Increase quantity">+</button>
+                </div>
+                <span class="cart-item-price">$115</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- ITEM 2 -->
+          <article class="cart-item" data-price="200" data-qty="1">
+            <div class="cart-item-image">
+              <svg class="shoe" role="img" aria-label="New Balance 990v6 in grey" style="--upper:#A9ADB5;--toe:#8F949E;--heel:#7F8490;--panel:#D5D7DC;--stay:#8F949E;--lace:#E9E7E1;--collar:#6D7280;--sole:#E9E7E1;--sole-top:#C9CBD1;--outsole:#9DA1AC;--air:#E9E7E1;--air-stroke:transparent"><use href="#shoe-run"/></svg>
+            </div>
+            <div class="cart-item-body">
+              <div class="cart-item-top">
+                <div class="cart-item-titles">
+                  <span class="cart-item-brand">New Balance</span>
+                  <h3 class="cart-item-name">990v6</h3>
+                  <span class="cart-item-size">Size: US 9.5</span>
+                </div>
+                <button class="remove-btn" aria-label="Remove 990v6 from cart">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>
+              </div>
+              <div class="cart-item-bottom">
+                <div class="qty-stepper">
+                  <button type="button" class="qty-minus" aria-label="Decrease quantity">−</button>
+                  <span class="qty-value">1</span>
+                  <button type="button" class="qty-plus" aria-label="Increase quantity">+</button>
+                </div>
+                <span class="cart-item-price">$200</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- ITEM 3 -->
+          <article class="cart-item" data-price="100" data-qty="1">
+            <div class="cart-item-image">
+              <svg class="shoe" role="img" aria-label="Adidas Samba OG in white, black and gum" style="--upper:#F3F1EA;--toe:#1E1F23;--heel:#1E1F23;--panel:#1E1F23;--stay:#F3F1EA;--lace:#1E1F23;--collar:#1E1F23;--sole:#C9A06A;--outsole:#A97F48"><use href="#shoe-low"/></svg>
+            </div>
+            <div class="cart-item-body">
+              <div class="cart-item-top">
+                <div class="cart-item-titles">
+                  <span class="cart-item-brand">Adidas</span>
+                  <h3 class="cart-item-name">Samba OG</h3>
+                  <span class="cart-item-size">Size: US 9</span>
+                </div>
+                <button class="remove-btn" aria-label="Remove Samba OG from cart">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>
+              </div>
+              <div class="cart-item-bottom">
+                <div class="qty-stepper">
+                  <button type="button" class="qty-minus" aria-label="Decrease quantity">−</button>
+                  <span class="qty-value">1</span>
+                  <button type="button" class="qty-plus" aria-label="Increase quantity">+</button>
+                </div>
+                <span class="cart-item-price">$100</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- EMPTY STATE (hidden unless all items removed) -->
+        <div class="cart-empty" id="cartEmpty">
+          <h3>Your cart is empty</h3>
+          <p>Looks like you haven't added any pairs yet.</p>
+          <a href="shop.html" class="btn-primary" style="display:inline-flex;">Continue Shopping</a>
+        </div>
+
+        <!-- YOU MIGHT ALSO LIKE -->
+        <div class="suggested-section">
+          <div class="suggested-head">
+            <h2>You Might Also Like</h2>
+            <p>Picked to match your cart</p>
+          </div>
+          <div class="suggested-grid">
+
+            <article class="product-card">
+              <div class="product-image">
+                <svg class="shoe" role="img" aria-label="Adidas Ultraboost Light in black with a white midsole" style="--upper:#24262B;--toe:#24262B;--heel:#34363C;--panel:#34363C;--stay:#34363C;--lace:#4A4D54;--collar:#34363C;--sole:#F1EFE8;--sole-top:#F1EFE8;--outsole:#24262B;--air:#F1EFE8;--air-stroke:transparent"><use href="#shoe-run"/></svg>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">Adidas</span>
+                <h3 class="product-name">Ultraboost Light</h3>
+                <div class="product-meta-row">
+                  <span class="product-price">$150</span>
+                  <button class="add-to-cart-mini">Add</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image">
+                <svg class="shoe" role="img" aria-label="New Balance 550 in white and grey" style="--upper:#F3F1EA;--toe:#DCDDE1;--heel:#CBCED6;--panel:#9CA3B2;--stay:#F3F1EA;--lace:#C8C5BA;--collar:#B4B9C6;--sole:#F7F5EF;--outsole:#D5D2C6"><use href="#shoe-low"/></svg>
+              </div>
+              <div class="product-info">
+                <span class="product-brand">New Balance</span>
+                <h3 class="product-name">550</h3>
+                <div class="product-meta-row">
+                  <span class="product-price">$120</span>
+                  <button class="add-to-cart-mini">Add</button>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <aside class="order-summary">
+        <h2>Order Summary</h2>
+
+        <div class="summary-row"><span>Subtotal</span><strong id="sumSubtotal">$415.00</strong></div>
+        <div class="summary-row"><span>Shipping</span><span class="free" id="sumShipping">Free</span></div>
+        <div class="summary-row"><span>Estimated tax</span><strong id="sumTax">$33.20</strong></div>
+
+        <div>
+          <div class="promo-row">
+            <input type="text" id="promoInput" placeholder="Promo code" aria-label="Promo code">
+            <button type="button" id="promoApply">Apply</button>
+          </div>
+          <p class="promo-note" id="promoNote"></p>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-total"><span>Total</span><span id="sumTotal">$448.20</span></div>
+
+        <a href="checkout.html" class="btn-primary" id="checkoutBtn">
+          Proceed to Checkout
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+
+        <div class="summary-secure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          Secure checkout
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="index.html" class="logo"><span class="dot"></span>KICKS LAB</a>
+          <p>Sneakers and streetwear for people who move fast and dress on purpose.</p>
+          <div class="footer-social">
+            <a href="#" class="social-btn" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg></a>
+            <a href="#" class="social-btn" aria-label="X"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></a>
+            <a href="#" class="social-btn" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18a4 4 0 1 0 4-4V3"/><path d="M13 6c0 2.5 2 4.5 4.5 4.5"/></svg></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Quick links</h4>
+          <ul>
+            <li><a href="shop.html">Men</a></li>
+            <li><a href="shop.html">New Drops</a></li>
+            <li><a href="shop.html">Sale</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col footer-newsletter">
+          <h4>Stay in the loop</h4>
+          <p>Restock alerts and early access, straight to your inbox.</p>
+          <form class="newsletter-form" onsubmit="return false;">
+            <input type="email" placeholder="Your email" aria-label="Email address" required>
+            <button type="submit">Sign up</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Kicks Lab</span>
+        <span class="footer-secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Secure checkout</span>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<!-- MOBILE BOTTOM TAB BAR -->
+<nav class="tab-bar" aria-label="Mobile">
+  <a href="shop.html" class="tab-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+    Home
+  </a>
+  <a href="shop.html" class="tab-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Search
+  </a>
+  <a href="#" class="tab-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+    Saved
+  </a>
+  <a href="#" class="tab-item is-active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    Bag
+    <span class="cart-badge">3</span>
+  </a>
+</nav>
+
+<script>
+  // Nav shrink on scroll
+  const nav = document.getElementById('siteNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('is-scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  // Inline search expand
+  const searchToggle = document.getElementById('searchToggle');
+  const searchField = document.getElementById('searchField');
+  searchToggle.addEventListener('click', () => {
+    const isOpen = searchField.classList.toggle('is-open');
+    searchToggle.setAttribute('aria-expanded', isOpen);
+    if (isOpen) searchField.querySelector('input').focus();
+  });
+
+  // Light / dark mode toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const sunIcon = themeToggle.querySelector('.icon-sun');
+  const moonIcon = themeToggle.querySelector('.icon-moon');
+  themeToggle.addEventListener('click', () => {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+    sunIcon.style.display = isLight ? 'flex' : 'none';
+    moonIcon.style.display = isLight ? 'none' : 'flex';
+  });
+
+  // Mobile nav drawer
+  const navDrawer = document.getElementById('mobileDrawer');
+  document.getElementById('mobileMenuOpen').addEventListener('click', () => navDrawer.classList.add('is-open'));
+  document.getElementById('mobileMenuClose').addEventListener('click', () => navDrawer.classList.remove('is-open'));
+  navDrawer.addEventListener('click', (e) => { if (e.target === navDrawer) navDrawer.classList.remove('is-open'); });
+
+  // ===================== CART LOGIC =====================
+  const SHIPPING_FLAT = 0; // free shipping over $75, assumed met
+  const TAX_RATE = 0.08;
+  let promoDiscount = 0;
+
+  const cartItemsWrap = document.getElementById('cartItems');
+  const cartEmpty = document.getElementById('cartEmpty');
+  const itemCountLabel = document.getElementById('itemCountLabel');
+  const cartBadge = document.getElementById('cartBadge');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+
+  function currency(n){ return '$' + n.toFixed(2); }
+
+  function recalc(){
+    const items = Array.from(cartItemsWrap.querySelectorAll('.cart-item'));
+    let subtotal = 0;
+    let totalQty = 0;
+    items.forEach(item => {
+      const price = parseFloat(item.dataset.price);
+      const qty = parseInt(item.dataset.qty, 10);
+      subtotal += price * qty;
+      totalQty += qty;
+    });
+
+    const discount = subtotal * promoDiscount;
+    const discountedSubtotal = subtotal - discount;
+    const tax = discountedSubtotal * TAX_RATE;
+    const total = discountedSubtotal + tax + SHIPPING_FLAT;
+
+    document.getElementById('sumSubtotal').textContent = currency(subtotal);
+    document.getElementById('sumTax').textContent = currency(tax);
+    document.getElementById('sumTotal').textContent = currency(total);
+    document.getElementById('sumShipping').textContent = SHIPPING_FLAT === 0 ? 'Free' : currency(SHIPPING_FLAT);
+
+    itemCountLabel.textContent = totalQty + (totalQty === 1 ? ' item' : ' items');
+    cartBadge.textContent = totalQty;
+
+    const isEmpty = items.length === 0;
+    cartEmpty.classList.toggle('is-visible', isEmpty);
+    cartItemsWrap.style.display = isEmpty ? 'none' : 'flex';
+    checkoutBtn.style.pointerEvents = isEmpty ? 'none' : 'auto';
+    checkoutBtn.style.opacity = isEmpty ? '0.5' : '1';
+  }
+
+  cartItemsWrap.addEventListener('click', (e) => {
+    const item = e.target.closest('.cart-item');
+    if (!item) return;
+
+    if (e.target.closest('.qty-plus')) {
+      let qty = parseInt(item.dataset.qty, 10) + 1;
+      if (qty > 10) qty = 10;
+      item.dataset.qty = qty;
+      item.querySelector('.qty-value').textContent = qty;
+      recalc();
+    }
+    if (e.target.closest('.qty-minus')) {
+      let qty = parseInt(item.dataset.qty, 10) - 1;
+      if (qty < 1) qty = 1;
+      item.dataset.qty = qty;
+      item.querySelector('.qty-value').textContent = qty;
+      recalc();
+    }
+    if (e.target.closest('.remove-btn')) {
+      item.style.transition = 'opacity .2s ease, transform .2s ease';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(12px)';
+      setTimeout(() => { item.remove(); recalc(); }, 180);
+    }
+  });
+
+  // Promo code
+  const promoApply = document.getElementById('promoApply');
+  const promoInput = document.getElementById('promoInput');
+  const promoNote = document.getElementById('promoNote');
+  promoApply.addEventListener('click', () => {
+    const code = promoInput.value.trim().toUpperCase();
+    if (code === 'KICKS10') {
+      promoDiscount = 0.10;
+      promoNote.textContent = 'KICKS10 applied — 10% off';
+      promoNote.classList.add('is-success');
+    } else if (code.length === 0) {
+      promoDiscount = 0;
+      promoNote.textContent = 'Enter a code to apply a discount.';
+      promoNote.classList.remove('is-success');
+    } else {
+      promoDiscount = 0;
+      promoNote.textContent = 'That code is not valid.';
+      promoNote.classList.remove('is-success');
+    }
+    recalc();
+  });
+
+  recalc();
+</script>
+
+</body>
+</html>
